@@ -1,0 +1,26 @@
+{
+  "name": "wp-polar-package",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WordPress plugin repository server with Composer support, authenticated via Polar.sh license keys",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "license": "GPL-3.0+",
+  "dependencies": {
+    "@polar-sh/sdk": "^0.46.7",
+    "jszip": "^3.10.1",
+    "marked": "^17.0.5",
+    "next": "^16.2.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/marked": "^5.0.2",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "typescript": "^6.0.2"
+  }
+}
