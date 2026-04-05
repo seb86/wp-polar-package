@@ -37,7 +37,7 @@ export async function GET(
     );
   }
 
-  const { valid } = await validateLicenseKey(credentials.licenseKey);
+  const { valid, benefitId } = await validateLicenseKey(credentials.licenseKey);
 
   if (!valid) {
     return NextResponse.json(
@@ -53,6 +53,14 @@ export async function GET(
     return NextResponse.json(
       { error: `Package ${packageName} not found.` },
       { status: 404 }
+    );
+  }
+
+  // Verify license grants access to this package's benefit
+  if (pkgDef.benefitId && benefitId !== pkgDef.benefitId) {
+    return NextResponse.json(
+      { error: "Your license key does not grant access to this package." },
+      { status: 403 }
     );
   }
 

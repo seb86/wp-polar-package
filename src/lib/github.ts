@@ -267,12 +267,20 @@ export async function getVersionDownloadUrlWithFallback(
 /**
  * Build the Composer packages.json response body.
  * Fetches releases from GitHub for all registered packages.
+ * Only includes premium packages whose benefitId matches the license key.
  */
-export async function buildPackagesJson(baseUrl: string): Promise<object> {
+export async function buildPackagesJson(baseUrl: string, grantedBenefitId?: string): Promise<object> {
   const packagesMap: Record<string, Record<string, object>> = {};
 
+  // Filter packages: include free packages and premium packages the user has access to
+  const accessiblePackages = packages.filter((pkg) => {
+    if (!pkg.premium) return true;
+    if (!pkg.benefitId) return true;
+    return grantedBenefitId === pkg.benefitId;
+  });
+
   const results = await Promise.all(
-    packages.map(async (pkg) => {
+    accessiblePackages.map(async (pkg) => {
       const versions = await getVersions(pkg);
       // Only include stable releases in the Composer index
       const stable = filterByChannel(versions, "stable");

@@ -7,6 +7,7 @@ import {
   ReleaseChannel,
 } from "@/lib/github";
 import { markdownToHtml } from "@/lib/markdown";
+import { extractCredentials, validateLicenseKey } from "@/lib/polar";
 
 function formatWordPressDate(date: Date): string {
   const year = date.getUTCFullYear();
@@ -44,6 +45,24 @@ export async function GET(
       { error: "Plugin not found" },
       { status: 404 }
     );
+  }
+
+  // Check if license key grants access to premium downloads
+  let hasDownloadAccess = !pkg.premium;
+  if (pkg.premium && pkg.benefitId) {
+    const credentials = extractCredentials(
+      request.headers.get("Authorization")
+    );
+    const licenseKeyValue =
+      credentials?.licenseKey ||
+      request.nextUrl.searchParams.get("license_key");
+
+    if (licenseKeyValue) {
+      const validation = await validateLicenseKey(licenseKeyValue);
+      if (validation.valid && validation.benefitId === pkg.benefitId) {
+        hasDownloadAccess = true;
+      }
+    }
   }
 
   const searchParams = request.nextUrl.searchParams;
@@ -111,16 +130,19 @@ export async function GET(
       .join("\n\n");
 
     // Build versions map
-    const versionsMap: Record<string, string> = {};
+    const versionsMap: Record<string, string | null> = {};
     for (const v of filtered) {
-      versionsMap[v.version] = `${baseUrl}/api/download/release/${slug}-${v.version}.zip${licenseParam}`;
+      versionsMap[v.version] = hasDownloadAccess
+        ? `${baseUrl}/api/download/release/${slug}-${v.version}.zip${licenseParam}`
+        : null;
     }
 
     // Build branches map
-    const branches: Record<string, string> = {};
+    const branches: Record<string, string | null> = {};
     if (pkg.branchDownload) {
-      branches[pkg.branchDownload] =
-        `${baseUrl}/api/download/branch/${slug}-${pkg.branchDownload}.zip${licenseParam}`;
+      branches[pkg.branchDownload] = hasDownloadAccess
+        ? `${baseUrl}/api/download/branch/${slug}-${pkg.branchDownload}.zip${licenseParam}`
+        : null;
     }
 
     // Total download count across all versions
@@ -143,7 +165,9 @@ export async function GET(
       requires: metadata?.requires || undefined,
       tested: metadata?.tested || undefined,
       requires_php: metadata?.requires_php || pkg.requiresPhp || undefined,
-      download_link: `${baseUrl}/api/download/release/${slug}-${target.version}.zip${licenseParam}`,
+      download_link: hasDownloadAccess
+        ? `${baseUrl}/api/download/release/${slug}-${target.version}.zip${licenseParam}`
+        : null,
       last_updated: target.publishedAt
         ? formatWordPressDate(new Date(target.publishedAt))
         : undefined,

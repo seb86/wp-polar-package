@@ -66,6 +66,13 @@ export async function GET(
         { status: 403 }
       );
     }
+
+    if (pkg.benefitId && validation.benefitId !== pkg.benefitId) {
+      return NextResponse.json(
+        { error: "Your license key does not grant access to this package" },
+        { status: 403 }
+      );
+    }
   }
 
   try {

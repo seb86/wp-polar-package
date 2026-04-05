@@ -28,6 +28,8 @@ export interface PackageDefinition {
   branchDownload?: string;
   /** If true, download endpoints require Polar license key auth */
   premium?: boolean;
+  /** Polar benefit ID required to access this package (premium only) */
+  benefitId?: string;
 }
 
 /**
@@ -63,6 +65,7 @@ export const packages: PackageDefinition[] = [
     assetPattern: "*.zip",
     requiresPhp: "7.4",
     premium: true,
+    benefitId: "acme_pro_access",
   },
 ];
 

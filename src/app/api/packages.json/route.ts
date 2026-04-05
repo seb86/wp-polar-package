@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const { valid } = await validateLicenseKey(credentials.licenseKey);
+  const { valid, benefitId } = await validateLicenseKey(credentials.licenseKey);
 
   if (!valid) {
     return NextResponse.json(
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   }
 
   const baseUrl = new URL(request.url).origin;
-  const packagesJson = await buildPackagesJson(baseUrl);
+  const packagesJson = await buildPackagesJson(baseUrl, benefitId);
 
   return NextResponse.json(packagesJson, {
     headers: {
