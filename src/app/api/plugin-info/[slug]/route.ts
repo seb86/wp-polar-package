@@ -8,6 +8,17 @@ import {
 } from "@/lib/github";
 import { markdownToHtml } from "@/lib/markdown";
 
+function formatWordPressDate(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  let hours = date.getUTCHours();
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "pm" : "am";
+  hours = hours % 12 || 12;
+  return `${year}-${month}-${day} ${hours}:${minutes}${ampm} GMT`;
+}
+
 /**
  * GET /api/plugin-info/{slug}
  *
@@ -130,7 +141,7 @@ export async function GET(
       requires_php: metadata?.requires_php || pkg.requiresPhp || undefined,
       download_link: `${baseUrl}/api/download/release/${slug}-${target.version}.zip`,
       last_updated: target.publishedAt
-        ? new Date(target.publishedAt).toISOString().split("T")[0]
+        ? formatWordPressDate(new Date(target.publishedAt))
         : undefined,
       download_count: totalDownloads,
       sections: {
