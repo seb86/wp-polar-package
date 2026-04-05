@@ -19,6 +19,7 @@ export interface GitHubRelease {
 }
 
 interface GitHubAsset {
+  id: number;
   name: string;
   browser_download_url: string;
   size: number;
@@ -28,6 +29,7 @@ interface GitHubAsset {
 export interface ResolvedVersion {
   version: string;
   downloadUrl: string;
+  browserDownloadUrl: string;
   assetName: string;
   publishedAt: string;
   body: string;
@@ -188,7 +190,8 @@ async function fetchReleasesFromGitHub(
 
       versions.push({
         version: normalizeVersion(release.tag_name),
-        downloadUrl: zipAsset.browser_download_url,
+        downloadUrl: `https://api.github.com/repos/${pkg.github}/releases/assets/${zipAsset.id}`,
+        browserDownloadUrl: zipAsset.browser_download_url,
         assetName: zipAsset.name,
         publishedAt: release.published_at,
         body: release.body || "",
@@ -232,10 +235,11 @@ export async function getVersions(
 export async function getVersionDownloadUrl(
   pkg: PackageDefinition,
   version: string
-): Promise<string | null> {
+): Promise<{ downloadUrl: string; browserDownloadUrl: string } | null> {
   const versions = await getVersions(pkg);
   const match = versions.find((v) => v.version === version);
-  return match?.downloadUrl ?? null;
+  if (!match) return null;
+  return { downloadUrl: match.downloadUrl, browserDownloadUrl: match.browserDownloadUrl };
 }
 
 /**
@@ -244,7 +248,7 @@ export async function getVersionDownloadUrl(
 export async function getVersionDownloadUrlWithFallback(
   pkg: PackageDefinition,
   version: string
-): Promise<{ downloadUrl: string; assetName: string } | null> {
+): Promise<{ downloadUrl: string; browserDownloadUrl: string; assetName: string } | null> {
   const versions = await getVersions(pkg);
 
   // Try exact match first, then with/without v prefix
@@ -253,7 +257,7 @@ export async function getVersionDownloadUrlWithFallback(
     const normalized = normalizeVersion(v);
     const match = versions.find((ver) => ver.version === normalized);
     if (match) {
-      return { downloadUrl: match.downloadUrl, assetName: match.assetName };
+      return { downloadUrl: match.downloadUrl, browserDownloadUrl: match.browserDownloadUrl, assetName: match.assetName };
     }
   }
 

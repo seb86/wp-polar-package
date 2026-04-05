@@ -57,9 +57,9 @@ export async function GET(
   }
 
   // Get the download URL from GitHub releases
-  const downloadUrl = await getVersionDownloadUrl(pkgDef, version);
+  const result = await getVersionDownloadUrl(pkgDef, version);
 
-  if (!downloadUrl) {
+  if (!result) {
     return NextResponse.json(
       { error: `Version ${version} not found for ${packageName}.` },
       { status: 404 }
@@ -69,7 +69,7 @@ export async function GET(
   // For private repos, we need to proxy the download with the GitHub token.
   // For public repos, a redirect would suffice.
   if (process.env.GITHUB_TOKEN) {
-    const response = await fetch(downloadUrl, {
+    const response = await fetch(result.downloadUrl, {
       headers: {
         Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
         Accept: "application/octet-stream",
@@ -95,5 +95,5 @@ export async function GET(
   }
 
   // Public repo — redirect directly to GitHub
-  return NextResponse.redirect(downloadUrl, 302);
+  return NextResponse.redirect(result.browserDownloadUrl, 302);
 }

@@ -97,7 +97,7 @@ export async function GET(
     }
 
     // Public repo: redirect to GitHub
-    return NextResponse.redirect(result.downloadUrl, 302);
+    return NextResponse.redirect(result.browserDownloadUrl, 302);
   } catch (error) {
     console.error(`Error downloading release ${slug}-${version}:`, error);
     return NextResponse.json(
