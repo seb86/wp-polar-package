@@ -27,7 +27,7 @@ export async function validateLicenseKey(
   }
 
   try {
-    const result = await polar.licenseKeys.validate({
+    const result = await polar.customerPortal.licenseKeys.validate({
       key,
       organizationId: process.env.POLAR_ORGANIZATION_ID!,
     });
@@ -39,7 +39,8 @@ export async function validateLicenseKey(
     };
     validationCache.set(key, entry);
     return { valid: entry.valid, benefitId: entry.benefitId };
-  } catch {
+  } catch (error) {
+    console.error("License key validation failed:", error);
     const entry = { valid: false, timestamp: Date.now() };
     validationCache.set(key, entry);
     return { valid: false };
