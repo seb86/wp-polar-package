@@ -158,7 +158,7 @@ export async function GET(
 
     return NextResponse.json(response, {
       headers: {
-        "Cache-Control": "public, max-age=300",
+        "Cache-Control": "no-store",
         "Access-Control-Allow-Origin": "*",
         "X-Frame-Options": "SAMEORIGIN",
       },
