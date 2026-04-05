@@ -48,6 +48,7 @@ export async function GET(
 
   const searchParams = request.nextUrl.searchParams;
   const requestedTag = searchParams.get("tag");
+  const licenseKey = searchParams.get("license_key");
   const channel = (searchParams.get("channel") || "stable") as ReleaseChannel;
 
   const validChannels: ReleaseChannel[] = [
@@ -99,6 +100,9 @@ export async function GET(
     );
 
     const baseUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+    const licenseParam = licenseKey
+      ? `?license_key=${encodeURIComponent(licenseKey)}`
+      : "";
 
     // Build changelog from all filtered release bodies
     const changelog = filtered
@@ -109,14 +113,14 @@ export async function GET(
     // Build versions map
     const versionsMap: Record<string, string> = {};
     for (const v of filtered) {
-      versionsMap[v.version] = `${baseUrl}/api/download/release/${slug}-${v.version}.zip`;
+      versionsMap[v.version] = `${baseUrl}/api/download/release/${slug}-${v.version}.zip${licenseParam}`;
     }
 
     // Build branches map
     const branches: Record<string, string> = {};
     if (pkg.branchDownload) {
       branches[pkg.branchDownload] =
-        `${baseUrl}/api/download/branch/${slug}-${pkg.branchDownload}.zip`;
+        `${baseUrl}/api/download/branch/${slug}-${pkg.branchDownload}.zip${licenseParam}`;
     }
 
     // Total download count across all versions
@@ -139,7 +143,7 @@ export async function GET(
       requires: metadata?.requires || undefined,
       tested: metadata?.tested || undefined,
       requires_php: metadata?.requires_php || pkg.requiresPhp || undefined,
-      download_link: `${baseUrl}/api/download/release/${slug}-${target.version}.zip`,
+      download_link: `${baseUrl}/api/download/release/${slug}-${target.version}.zip${licenseParam}`,
       last_updated: target.publishedAt
         ? formatWordPressDate(new Date(target.publishedAt))
         : undefined,
