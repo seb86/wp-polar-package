@@ -155,6 +155,8 @@ export async function GET(
     return NextResponse.json(response, {
       headers: {
         "Cache-Control": "public, max-age=300",
+        "Access-Control-Allow-Origin": "*",
+        "X-Frame-Options": "SAMEORIGIN",
       },
     });
   } catch (error) {
