@@ -41,14 +41,18 @@ export async function GET(
     const credentials = extractCredentials(
       _request.headers.get("Authorization")
     );
-    if (!credentials) {
+    const licenseKey =
+      credentials?.licenseKey ||
+      _request.nextUrl.searchParams.get("license_key");
+
+    if (!licenseKey) {
       return NextResponse.json(
         { error: "License key required" },
         { status: 403 }
       );
     }
 
-    const validation = await validateLicenseKey(credentials.licenseKey);
+    const validation = await validateLicenseKey(licenseKey);
     if (!validation.valid) {
       return NextResponse.json(
         { error: "Invalid or expired license key" },
