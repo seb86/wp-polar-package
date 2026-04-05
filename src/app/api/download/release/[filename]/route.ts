@@ -42,12 +42,10 @@ export async function GET(
       _request.headers.get("Authorization")
     );
     if (!credentials) {
-      return new NextResponse("Authentication required", {
-        status: 401,
-        headers: {
-          "WWW-Authenticate": 'Basic realm="Plugin Downloads"',
-        },
-      });
+      return NextResponse.json(
+        { error: "License key required" },
+        { status: 403 }
+      );
     }
 
     const validation = await validateLicenseKey(credentials.licenseKey);
